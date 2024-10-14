@@ -24,7 +24,8 @@
     "react-native-sound": "*",
     "react-native-svg": "15.2.0",
     "react-native-toast-message": "*",
-    "react-native-vector-icons": "*"
+    "react-native-vector-icons": "*",
+    "expo-notifications": "~0.28.18"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

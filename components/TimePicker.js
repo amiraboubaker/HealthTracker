@@ -1,22 +1,20 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 const TimePicker = ({ label, time, setTime }) => {
   const [showPicker, setShowPicker] = useState(false);
 
-  const handleTimeChange = async (event, selectedTime) => {
-    try {
-      if (selectedTime) {
-        await setTime(selectedTime);
-      }
-      setShowPicker(Platform.OS === 'ios');
-    } catch (error) {
-      console.error("Error setting time: ", error);
+  const handleTimeChange = (event, selectedTime) => {
+    // Check if the event is of type 'set' and selectedTime is valid
+    if (event.type === 'set' && selectedTime) {
+      setTime(selectedTime); // Update the time with the selected value
     }
+    
+    // Always close the picker after selection
+    setShowPicker(false);
   };
   
-
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -26,11 +24,11 @@ const TimePicker = ({ label, time, setTime }) => {
       </Text>
       {showPicker && (
         <DateTimePicker
-          value={time}
+          value={time} // Make sure this is a valid Date object
           mode="time"
           display="default"
           onChange={handleTimeChange}
-          onTouchCancel={() => setShowPicker(false)}
+          onTouchCancel={() => setShowPicker(false)} // Close the picker on touch cancel
         />
       )}
     </View>

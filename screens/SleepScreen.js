@@ -1,109 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import UserInfo from '../components/UserInfo';
-import SleepTimeCard from '../components/SleepTimeCard';
-import SleepChart from '../components/SleepChart';
+import * as Notifications from 'expo-notifications';
+import React, { useEffect, useState } from 'react';
+import { Alert, StyleSheet, View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { Audio } from 'expo-av';
+import SleepChart from '../components/SleepChart';
+import SleepTimeCard from '../components/SleepTimeCard';
+import UserInfo from '../components/UserInfo';
 
 const SleepScreen = () => {
   const [sleepTime, setSleepTime] = useState(new Date());
   const [wakeTime, setWakeTime] = useState(new Date());
   const [sleepData, setSleepData] = useState([6, 7, 5, 8, 6, 7, 9]);
-  const [showSleepPicker, setShowSleepPicker] = useState(false);
-  const [showWakePicker, setShowWakePicker] = useState(false);
   const username = "Your Username";
 
-  // Sound variables
-  const [bedtimeSound, setBedtimeSound] = useState();
-  const [wakeupSound, setWakeupSound] = useState();
+  useEffect(() => {
+    const requestPermissions = async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        const { status: newStatus } = await Notifications.requestPermissionsAsync();
+        if (newStatus !== 'granted') {
+          alert('Notification permissions not granted!');
+        }
+      }
+    };
+
+    requestPermissions();
+
+    // Listen for notification responses
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const { title, body } = response.notification.request.content;
+      Alert.alert(title, body); // Show alert when notification is tapped
+    });
+
+    return () => {
+      subscription.remove(); // Cleanup subscription on unmount
+    };
+  }, []);
 
   const saveSleepTime = () => {
+    // Set wake time to 10 seconds in the future for testing
+    const currentDate = new Date();
+    const futureDate = new Date(currentDate.getTime() + 10 * 1000);
+    setWakeTime(futureDate);
+
     Toast.show({
       type: 'success',
       text1: 'Saved successfully',
     });
-    
+
     scheduleAlerts();
   };
 
-  const scheduleAlerts = () => {
+  const scheduleAlerts = async () => {
     const currentDate = new Date();
     const sleepAlertTime = new Date(sleepTime);
     const wakeAlertTime = new Date(wakeTime);
 
+    // Schedule bedtime alert
     const timeToBed = sleepAlertTime - currentDate;
     if (timeToBed > 0) {
       setTimeout(() => {
-        playSound(bedtimeSound);
         Alert.alert("Time to Go to Bed", "It's time to get ready for bed!");
       }, timeToBed);
     }
 
+    // Schedule wake-up alert
     const timeToWake = wakeAlertTime - currentDate;
+    console.log(`Time to wake (ms): ${timeToWake}`); // Log the time to wake
     if (timeToWake > 0) {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Time to wake up!',
+          body: "It's time to get up!",
+          sound: 'default',
+        },
+        trigger: {
+          seconds: Math.floor(timeToWake / 1000), // Convert milliseconds to seconds
+        },
+      });
+      
+      // Alert the user when the time to wake arrives
       setTimeout(() => {
-        playSound(wakeupSound);
-        Alert.alert("Time to Wake Up", "It's time to get up!");
+        Alert.alert("Wake Up Alert", "It's time to wake up!");
       }, timeToWake);
     }
   };
 
-  const playSound = async (sound) => {
-    if (sound) {
-      await sound.replayAsync(); // Play the sound again if already loaded
-    }
-  };
-
-  // Load sounds
-  const loadSounds = async () => {
-    const { sound: bedtimeSound } = await Audio.Sound.createAsync(
-      require('../assets/sounds/BedTime.mp3')
-    );
-    setBedtimeSound(bedtimeSound);
-
-    const { sound: wakeupSound } = await Audio.Sound.createAsync(
-      require('../assets/sounds/WakeUp.mp3')
-    );
-    setWakeupSound(wakeupSound);
-  };
-
-  useEffect(() => {
-    loadSounds();
-    
-    // Clean up the sounds when the component unmounts or the sounds change
-    return () => {
-      if (bedtimeSound) {
-        bedtimeSound.unloadAsync();
-      }
-      if (wakeupSound) {
-        wakeupSound.unloadAsync();
-      }
-    };
-  }, [bedtimeSound, wakeupSound]); // Include the sound variables in the dependency array
-
   return (
     <View style={styles.container}>
-      {/* Username Component */}
       <UserInfo username={username} />
-
-      {/* Sleep Time Card */}
       <SleepTimeCard
         sleepTime={sleepTime}
         setSleepTime={setSleepTime}
-        showSleepPicker={showSleepPicker}
-        setShowSleepPicker={setShowSleepPicker}
         wakeTime={wakeTime}
         setWakeTime={setWakeTime}
-        showWakePicker={showWakePicker}
-        setShowWakePicker={setShowWakePicker}
         onSave={saveSleepTime}
       />
-
-      {/* Chart */}
       <SleepChart sleepData={sleepData} />
-
-      {/* Toast */}
       <Toast />
     </View>
   );
@@ -113,7 +105,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    // justifyContent: 'space-between', 
   },
 });
 
