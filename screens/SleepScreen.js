@@ -1,3 +1,4 @@
+import { Audio } from 'expo-av'; // Import Audio from expo-av
 import * as Notifications from 'expo-notifications';
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
@@ -12,6 +13,10 @@ const SleepScreen = () => {
   const [sleepData, setSleepData] = useState([6, 7, 5, 8, 6, 7, 9]);
   const username = "Your Username";
 
+  // Audio state
+  const [bedtimeSound, setBedtimeSound] = useState();
+  const [wakeSound, setWakeSound] = useState();
+
   useEffect(() => {
     const requestPermissions = async () => {
       const { status } = await Notifications.getPermissionsAsync();
@@ -25,6 +30,9 @@ const SleepScreen = () => {
 
     requestPermissions();
 
+    // Load sound assets
+    loadSounds();
+
     // Listen for notification responses
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const { title, body } = response.notification.request.content;
@@ -35,6 +43,18 @@ const SleepScreen = () => {
       subscription.remove(); // Cleanup subscription on unmount
     };
   }, []);
+
+  // Load sounds for bedtime and wake-up alerts
+  const loadSounds = async () => {
+    const { sound: bedtimeSound } = await Audio.Sound.createAsync(
+      require('../assets/sounds/BedTime.mp3') // Adjust the path according to your project structure
+    );
+    const { sound: wakeSound } = await Audio.Sound.createAsync(
+      require('../assets/sounds/WakeUp.mp3') // Adjust the path according to your project structure
+    );
+    setBedtimeSound(bedtimeSound);
+    setWakeSound(wakeSound);
+  };
 
   const saveSleepTime = () => {
     // Set wake time to 10 seconds in the future for testing
@@ -58,7 +78,8 @@ const SleepScreen = () => {
     // Schedule bedtime alert
     const timeToBed = sleepAlertTime - currentDate;
     if (timeToBed > 0) {
-      setTimeout(() => {
+      setTimeout(async () => {
+        await bedtimeSound.playAsync(); // Play bedtime sound
         Alert.alert("Time to Go to Bed", "It's time to get ready for bed!");
       }, timeToBed);
     }
@@ -77,11 +98,23 @@ const SleepScreen = () => {
           seconds: Math.floor(timeToWake / 1000), // Convert milliseconds to seconds
         },
       });
-      
+
       // Alert the user when the time to wake arrives
-      setTimeout(() => {
+      setTimeout(async () => {
+        await playWakeSoundForDuration(5000); // Play wake-up sound for 5 seconds
         Alert.alert("Wake Up Alert", "It's time to wake up!");
       }, timeToWake);
+    }
+  };
+
+  // Function to play wake sound for 5 seconds
+  const playWakeSoundForDuration = async (duration) => {
+    const interval = 1000; // Play sound every 1 second
+    const totalIterations = duration / interval; // Total number of times to play sound
+
+    for (let i = 0; i < totalIterations; i++) {
+      await wakeSound.playAsync(); // Play the wake-up sound
+      await new Promise(resolve => setTimeout(resolve, interval)); // Wait for 1 second before playing again
     }
   };
 
