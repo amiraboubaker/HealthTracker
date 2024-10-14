@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import Svg, { Defs, LinearGradient, Stop, Path } from "react-native-svg";
 
 export default function WaterComponent() {
-  const [waterLevel, setWaterLevel] = useState(0);
+  const [waterLevel, setWaterLevel] = useState(0); // Quantité d'eau bue en pourcentage
 
   const addWater = () => {
     if (waterLevel < 100) {
-      setWaterLevel(waterLevel + 5);
+      setWaterLevel(waterLevel + 5); // Ajoute 50cl (5% de remplissage)
     }
   };
 
@@ -14,7 +15,23 @@ export default function WaterComponent() {
     <View style={styles.container}>
       <Text style={styles.title}>Suivi d'eau</Text>
       <View style={styles.bottleContainer}>
-        <View style={[styles.water, { height: `${waterLevel}%` }]} />
+        <Svg height="100%" width="100%" viewBox="0 0 100 300">
+          <Defs>
+            <LinearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <Stop offset="0%" stopColor="#00bfff" stopOpacity="1" />
+              <Stop offset="100%" stopColor="#00bfff" stopOpacity="0.5" />
+            </LinearGradient>
+          </Defs>
+          {/* Dessine la surface de l'eau avec une ligne ondulée */}
+          <Path
+            d={`M 0,${300 - waterLevel * 3}
+              C 25,${290 - waterLevel * 3}, 75,${310 - waterLevel * 3}, 100,${
+              300 - waterLevel * 3
+            }
+              L 100,300 L 0,300 Z`}
+            fill="url(#grad)"
+          />
+        </Svg>
       </View>
       <Text style={styles.waterText}>{waterLevel * 10}cl / 1000cl</Text>
       <TouchableOpacity style={styles.button} onPress={addWater}>
@@ -45,10 +62,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     overflow: "hidden",
     backgroundColor: "#e0e0e0",
-  },
-  water: {
-    width: "100%",
-    backgroundColor: "#00bfff",
   },
   waterText: {
     marginVertical: 10,
