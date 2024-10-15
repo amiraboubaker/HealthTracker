@@ -8,11 +8,13 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.3",
+    "@react-native-async-storage/async-storage": "^2.0.0",
     "@react-native-community/datetimepicker": "^8.0.1",
     "@react-navigation/bottom-tabs": "*",
     "@react-navigation/native": "*",
     "expo": "~51.0.28",
     "expo-av": "~14.0.7",
+    "expo-notifications": "~0.28.18",
     "expo-status-bar": "~1.12.1",
     "react": "18.2.0",
     "react-native": "0.74.5",
@@ -24,8 +26,7 @@
     "react-native-sound": "*",
     "react-native-svg": "15.2.0",
     "react-native-toast-message": "*",
-    "react-native-vector-icons": "*",
-    "expo-notifications": "~0.28.18"
+    "react-native-vector-icons": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
