@@ -1,25 +1,46 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BarChart } from "react-native-chart-kit";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
-import moment from "moment"; // Utiliser la librairie moment pour la gestion des dates
+import moment from "moment";
 
-export default function WeeklyWaterChart() {
-  // Créer un tableau de 7 dates, en partant d'aujourd'hui et en remontant
-  const getLast7Days = () => {
-    let days = [];
-    for (let i = 0; i < 7; i++) {
-      days.push(moment().subtract(i, "days").format("DD/MM"));
-    }
-    return days.reverse(); // Inverser pour avoir les dates dans l'ordre
+export default function WeeklyWaterChart({ waterData }) {
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [{ data: [] }],
+  });
+  const [maxValue, setMaxValue] = useState(0);
+
+  useEffect(() => {
+    const { labels, data, max } = processDataForChart(waterData);
+    setChartData({
+      labels: labels,
+      datasets: [{ data: data }],
+    });
+    setMaxValue(max);
+  }, [waterData]);
+
+  const processDataForChart = (data) => {
+    const last7Days = getLast7Days();
+    const chartData = last7Days.map((date) => {
+      const formattedDate = moment(date, "DD/MM").format("YYYY-MM-DD");
+      return data[formattedDate] || 0;
+    });
+
+    const max = Math.max(...chartData, 1000); // Assurez un minimum de 1000ml pour l'échelle
+
+    return {
+      labels: last7Days,
+      data: chartData,
+      max: max,
+    };
   };
 
-  const data = {
-    labels: getLast7Days(), // Les dates remplacent les jours
-    datasets: [
-      {
-        data: [1500, 2000, 1800, 2500, 2200, 1900, 2100], // Valeurs fictives
-      },
-    ],
+  const getLast7Days = () => {
+    let days = [];
+    for (let i = 6; i >= 0; i--) {
+      days.push(moment().subtract(i, "days").format("DD/MM"));
+    }
+    return days;
   };
 
   return (
@@ -28,10 +49,11 @@ export default function WeeklyWaterChart() {
         Quantité d'eau bue durant la semaine
       </Text>
       <BarChart
-        data={data}
-        width={Dimensions.get("window").width - 30} // Largeur du graphique
+        data={chartData}
+        width={Dimensions.get("window").width - 30}
         height={220}
         yAxisSuffix="ml"
+        yAxisInterval={1}
         chartConfig={{
           backgroundColor: "#1cc910",
           backgroundGradientFrom: "#eff3ff",
@@ -49,6 +71,11 @@ export default function WeeklyWaterChart() {
           },
         }}
         verticalLabelRotation={30}
+        fromZero={true}
+        withInnerLines={true}
+        segments={5}
+        yLabelsOffset={0}
+        yAxisMax={maxValue}
       />
     </View>
   );
@@ -58,6 +85,7 @@ const styles = StyleSheet.create({
   chartTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    marginTop: 50,
     marginBottom: 10,
     textAlign: "center",
   },
