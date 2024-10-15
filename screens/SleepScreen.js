@@ -101,21 +101,35 @@ const SleepScreen = () => {
 
       // Alert the user when the time to wake arrives
       setTimeout(async () => {
-        await playWakeSoundForDuration(5000); // Play wake-up sound for 5 seconds
-        Alert.alert("Wake Up Alert", "It's time to wake up!");
+        await playWakeSound(); // Play wake-up sound
+        showWakeUpAlert(); // Show the wake-up alert
       }, timeToWake);
     }
   };
 
-  // Function to play wake sound for 5 seconds
-  const playWakeSoundForDuration = async (duration) => {
-    const interval = 1000; // Play sound every 1 second
-    const totalIterations = duration / interval; // Total number of times to play sound
+  // Function to play wake sound once
+  const playWakeSound = async () => {
+    await wakeSound.playAsync(); // Play the wake-up sound
+  };
 
-    for (let i = 0; i < totalIterations; i++) {
-      await wakeSound.playAsync(); // Play the wake-up sound
-      await new Promise(resolve => setTimeout(resolve, interval)); // Wait for 1 second before playing again
-    }
+  // Show wake-up alert and stop the sound
+  const showWakeUpAlert = () => {
+    Alert.alert(
+      "Wake Up Alert",
+      "It's time to wake up!",
+      [
+        {
+          text: "OK",
+          onPress: stopWakeSound, // Stop the wake sound when OK is pressed
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  // Function to stop the wake sound
+  const stopWakeSound = async () => {
+    await wakeSound.stopAsync(); // Stop the wake sound
   };
 
   return (
