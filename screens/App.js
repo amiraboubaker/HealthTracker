@@ -1,6 +1,6 @@
-import React from 'react';
-import SleepScreen from './screens/SleepScreen';
-import BottomBar from './components/BottomBar'; // Import the BottomBar
+import React from "react";
+import SleepScreen from "./screens/SleepScreen";
+import BottomBar from "./components/BottomBar"; // Import the BottomBar
 
 const App = () => {
   return (
@@ -8,6 +8,6 @@ const App = () => {
       <BottomBar />
     </>
   );
-}
+};
 
 export default App;
