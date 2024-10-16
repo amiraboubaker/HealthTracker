@@ -1,120 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import UserInfo from '../components/UserInfo';
-import SleepTimeCard from '../components/SleepTimeCard';
-import SleepChart from '../components/SleepChart';
-import Toast from 'react-native-toast-message';
-import { Audio } from 'expo-av';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import SleepInput from "../components/sleep/sleepInput";
+import WeeklySleepChart from "../components/sleep/WeeklySleepChart";
 
-const SleepScreen = () => {
-  const [sleepTime, setSleepTime] = useState(new Date());
-  const [wakeTime, setWakeTime] = useState(new Date());
-  const [sleepData, setSleepData] = useState([6, 7, 5, 8, 6, 7, 9]);
-  const [showSleepPicker, setShowSleepPicker] = useState(false);
-  const [showWakePicker, setShowWakePicker] = useState(false);
-  const username = "Your Username";
+export default function SleepScreen() {
+    const [sleepData, setSleepData] = useState({});
 
-  // Sound variables
-  const [bedtimeSound, setBedtimeSound] = useState();
-  const [wakeupSound, setWakeupSound] = useState();
-
-  const saveSleepTime = () => {
-    Toast.show({
-      type: 'success',
-      text1: 'Saved successfully',
-    });
-    
-    scheduleAlerts();
-  };
-
-  const scheduleAlerts = () => {
-    const currentDate = new Date();
-    const sleepAlertTime = new Date(sleepTime);
-    const wakeAlertTime = new Date(wakeTime);
-
-    const timeToBed = sleepAlertTime - currentDate;
-    if (timeToBed > 0) {
-      setTimeout(() => {
-        playSound(bedtimeSound);
-        Alert.alert("Time to Go to Bed", "It's time to get ready for bed!");
-      }, timeToBed);
-    }
-
-    const timeToWake = wakeAlertTime - currentDate;
-    if (timeToWake > 0) {
-      setTimeout(() => {
-        playSound(wakeupSound);
-        Alert.alert("Time to Wake Up", "It's time to get up!");
-      }, timeToWake);
-    }
-  };
-
-  const playSound = async (sound) => {
-    if (sound) {
-      await sound.replayAsync(); // Play the sound again if already loaded
-    }
-  };
-
-  // Load sounds
-  const loadSounds = async () => {
-    const { sound: bedtimeSound } = await Audio.Sound.createAsync(
-      require('../assets/sounds/BedTime.mp3')
-    );
-    setBedtimeSound(bedtimeSound);
-
-    const { sound: wakeupSound } = await Audio.Sound.createAsync(
-      require('../assets/sounds/WakeUp.mp3')
-    );
-    setWakeupSound(wakeupSound);
-  };
-
-  useEffect(() => {
-    loadSounds();
-    
-    // Clean up the sounds when the component unmounts or the sounds change
-    return () => {
-      if (bedtimeSound) {
-        bedtimeSound.unloadAsync();
-      }
-      if (wakeupSound) {
-        wakeupSound.unloadAsync();
-      }
+    const addSleep = async (newSleepData) => {
+        setSleepData(newSleepData);
     };
-  }, [bedtimeSound, wakeupSound]); // Include the sound variables in the dependency array
 
-  return (
-    <View style={styles.container}>
-      {/* Username Component */}
-      <UserInfo username={username} />
+    const loadSleepData = async () => {
+        try {
+            const storedData = await AsyncStorage.getItem("sleepData");
+            if (storedData) {
+                setSleepData(JSON.parse(storedData));
+            }
+        } catch (error) {
+            console.error("Failed to load sleep data", error);
+        }
+    };
 
-      {/* Sleep Time Card */}
-      <SleepTimeCard
-        sleepTime={sleepTime}
-        setSleepTime={setSleepTime}
-        showSleepPicker={showSleepPicker}
-        setShowSleepPicker={setShowSleepPicker}
-        wakeTime={wakeTime}
-        setWakeTime={setWakeTime}
-        showWakePicker={showWakePicker}
-        setShowWakePicker={setShowWakePicker}
-        onSave={saveSleepTime}
-      />
+    useEffect(() => {
+        loadSleepData(); // Load data on component mount
+    }, []);
 
-      {/* Chart */}
-      <SleepChart sleepData={sleepData} />
-
-      {/* Toast */}
-      <Toast />
-    </View>
-  );
-};
+    return (
+        <View style={styles.container}>
+            <Text style={styles.title}>Sleep Tracker</Text>
+            <SleepInput onAddSleep={addSleep} />
+            <WeeklySleepChart sleepData={sleepData} />
+        </View>
+    );
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 10,
-    // justifyContent: 'space-between', 
-  },
+    container: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f0f8ff",
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        marginBottom: 20,
+    },
 });
-
-export default SleepScreen;
