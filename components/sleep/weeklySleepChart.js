@@ -12,6 +12,7 @@ export default function WeeklySleepChart() {
   });
   const [maxValue, setMaxValue] = useState(0);
 
+  // Load sleep duration from AsyncStorage when the component mounts
   useEffect(() => {
     const loadSleepDuration = async () => {
       try {
@@ -23,10 +24,10 @@ export default function WeeklySleepChart() {
         console.error('Failed to load sleep duration:', error);
       }
     };
-
-    loadSleepDuration(); // Load sleep duration when component mounts
+    loadSleepDuration();
   }, []);
 
+  // Update chart data when sleepDuration changes
   useEffect(() => {
     const { labels, data, max } = processDataForChart();
     setChartData({
@@ -34,7 +35,7 @@ export default function WeeklySleepChart() {
       datasets: [{ data: data }],
     });
     setMaxValue(max);
-  }, [sleepDuration]); // Update when sleepDuration changes
+  }, [sleepDuration]);
 
   const processDataForChart = () => {
     const last7Days = getLast7Days();
@@ -60,11 +61,15 @@ export default function WeeklySleepChart() {
     return days;
   };
 
+  // Save sleep duration and update chart immediately
   const handleSaveSleepDuration = async () => {
     try {
-      // Save sleep duration in AsyncStorage
-      await AsyncStorage.setItem('sleepDuration', sleepDuration.toString());
+      await AsyncStorage.setItem('sleepDuration', sleepDuration.toString()); // Save to AsyncStorage
       Alert.alert('Success', 'Sleep duration saved!');
+      
+      // Trigger a re-render of the chart by updating the sleep duration
+      const updatedDuration = parseInt(sleepDuration); // Make sure it's a number
+      setSleepDuration(updatedDuration);  // Updates the chart automatically
     } catch (error) {
       console.error('Failed to save sleep duration:', error);
     }
@@ -88,11 +93,6 @@ export default function WeeklySleepChart() {
           labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           style: {
             borderRadius: 16,
-          },
-          propsForDots: {
-            r: "6",
-            strokeWidth: "2",
-            stroke: "#ffa726",
           },
         }}
         verticalLabelRotation={30}
