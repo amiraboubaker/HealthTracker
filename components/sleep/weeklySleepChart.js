@@ -1,13 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { Alert, Dimensions, StyleSheet, Text, View } from 'react-native'; // Import TextInput here
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 
-export default function WeeklySleepChart() {
-  const [sleepTime, setSleepTime] = useState(''); // Store sleep time as a string
-  const [wakeUpTime, setWakeUpTime] = useState(''); // Store wake-up time as a string
-  const [sleepDuration, setSleepDuration] = useState(0); // Duration in minutes
+export default function WeeklySleepChart({ sleepData }) {
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [{ data: [] }],
@@ -16,82 +13,39 @@ export default function WeeklySleepChart() {
 
   // Load previous sleep data from AsyncStorage
   useEffect(() => {
-    const loadSleepData = async () => {
-      try {
-        const sleepTimeValue = await AsyncStorage.getItem('sleepTime');
-        const wakeUpTimeValue = await AsyncStorage.getItem('wakeUpTime');
-
-        if (sleepTimeValue && wakeUpTimeValue) {
-          setSleepTime(sleepTimeValue);
-          setWakeUpTime(wakeUpTimeValue);
-          calculateSleepDuration(sleepTimeValue, wakeUpTimeValue);
-        }
-      } catch (error) {
-        console.error('Failed to load sleep data:', error);
-      }
-    };
-    loadSleepData();
-  }, []);
-
-  // Calculate sleep duration whenever sleep or wake-up time changes
-  useEffect(() => {
-    calculateSleepDuration(sleepTime, wakeUpTime);
-  }, [sleepTime, wakeUpTime]);
-
-  // Function to calculate sleep duration
-  const calculateSleepDuration = (sleepTime, wakeUpTime) => {
-    if (sleepTime && wakeUpTime) {
-      const sleepMoment = moment(sleepTime, 'HH:mm');
-      const wakeUpMoment = moment(wakeUpTime, 'HH:mm');
-      const duration = moment.duration(wakeUpMoment.diff(sleepMoment)).asMinutes();
-      
-      setSleepDuration(duration > 0 ? duration : 0); // Ensure duration is non-negative
+    if (sleepData) {
+      updateChartData(sleepData);
     }
-  };
+  }, [sleepData]);
 
-  // Update chart data when sleepDuration changes
-  useEffect(() => {
-    const { labels, data, max } = processDataForChart();
-    setChartData({
-      labels: labels,
-      datasets: [{ data: data }],
-    });
-    setMaxValue(max);
-  }, [sleepDuration]);
-
-  const processDataForChart = () => {
+  const updateChartData = (sleepHistory) => {
     const last7Days = getLast7Days();
     const chartData = last7Days.map((date) => {
-      const formattedDate = moment(date, "DD/MM").format("YYYY-MM-DD");
-      return formattedDate === moment().format("YYYY-MM-DD") ? sleepDuration : 0; // Use the current sleep duration
+      const sleepDuration = sleepHistory[date]?.hours || 0;
+      return sleepDuration; // Return total hours
     });
 
-    const max = Math.max(...chartData, 10); // Minimum scale value
+    const max = Math.max(...chartData, 0); // Minimum scale value
 
-    return {
-      labels: last7Days,
-      data: chartData,
-      max: max,
-    };
+    setChartData({
+      labels: last7Days.map(date => moment(date, 'YYYY-MM-DD').format('DD/MM')), // Format as day/month
+      datasets: [{ data: chartData }],
+    });
+    setMaxValue(max);
   };
 
   const getLast7Days = () => {
     let days = [];
     for (let i = 6; i >= 0; i--) {
-      days.push(moment().subtract(i, "days").format("DD/MM"));
+      days.push(moment().subtract(i, 'days').format('YYYY-MM-DD'));
     }
     return days;
   };
 
-  // Save sleep data to AsyncStorage
-  const handleSaveSleepData = async () => {
-    try {
-      await AsyncStorage.setItem('sleepTime', sleepTime);
-      await AsyncStorage.setItem('wakeUpTime', wakeUpTime);
-      Alert.alert('Success', 'Sleep data saved!');
-    } catch (error) {
-      console.error('Failed to save sleep data:', error);
-    }
+  const formatYAxisLabel = (value) => {
+    const hours = Math.floor(value);
+    const minutes = Math.round((value % 1) * 60);
+    return `${hours} hr ${minutes} mn`; // Format as "X hr X mn"
   };
 
   return (
@@ -99,19 +53,23 @@ export default function WeeklySleepChart() {
       <Text style={styles.chartTitle}>Hours of Sleep in the Past Week</Text>
       <BarChart
         data={chartData}
-        width={Dimensions.get("window").width - 30}
+        width={Dimensions.get('window').width - 30}
         height={220}
-        yAxisSuffix=" mins"
-        yAxisInterval={60} // Change to 60 to represent hours more clearly
+        yAxisLabel=""
+        yAxisSuffix=""
+        yLabelsInterval={1}
         chartConfig={{
           backgroundColor: "#1cc910",
           backgroundGradientFrom: "#eff3ff",
           backgroundGradientTo: "#efefef",
-          decimalPlaces: 0,
+          decimalPlaces: 0, // No decimal places for minutes
           color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
           labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           style: {
             borderRadius: 16,
+          },
+          propsForLabels: {
+            fontSize: 10,
           },
         }}
         verticalLabelRotation={30}
@@ -120,6 +78,12 @@ export default function WeeklySleepChart() {
         segments={5}
         yLabelsOffset={0}
         yAxisMax={maxValue}
+        onDataPointClick={(data) => {
+          const { value } = data;
+          const hours = Math.floor(value);
+          const minutes = Math.round((value % 1) * 60);
+          alert(`You slept for ${hours} hours and ${minutes} minutes on ${data.x}`); // Show alert on click
+        }}
       />
     </View>
   );
@@ -128,17 +92,10 @@ export default function WeeklySleepChart() {
 const styles = StyleSheet.create({
   chartTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginTop: 50,
     marginBottom: 10,
-    textAlign: "center",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    padding: 10,
-    margin: 10,
+    textAlign: 'center',
   },
 });
 

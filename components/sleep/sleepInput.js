@@ -1,8 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import moment from "moment";
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import moment from "moment"; // Import moment for date formatting
 
 const SleepInput = ({ onAddSleep }) => {
   const [sleepTime, setSleepTime] = useState(new Date());
@@ -11,11 +11,13 @@ const SleepInput = ({ onAddSleep }) => {
   const [showWakePicker, setShowWakePicker] = useState(false);
 
   const handleAddSleep = async () => {
-    const sleepHours = (wakeUpTime - sleepTime) / 1000 / 60 / 60; // Calculate hours
-    const today = moment().format("YYYY-MM-DD"); // Get current date in YYYY-MM-DD format
+    const sleepDuration = wakeUpTime - sleepTime; // Duration in milliseconds
+    const sleepHours = Math.floor(sleepDuration / 1000 / 60 / 60);
+    const sleepMinutes = Math.floor((sleepDuration / 1000 / 60) % 60);
+    const today = moment().format("YYYY-MM-DD");
 
     const sleepData = {
-      hours: sleepHours > 0 ? sleepHours : 0, // Ensure non-negative sleep hours
+      hours: sleepHours + sleepMinutes / 60, // Save total hours (including minutes as a fraction)
       date: today,
     };
 
@@ -27,7 +29,7 @@ const SleepInput = ({ onAddSleep }) => {
       // Update the sleep data for the current date
       sleepHistory[today] = {
         ...sleepHistory[today],
-        hours: (sleepHistory[today]?.hours || 0) + sleepData.hours, // Accumulate hours if the date exists
+        hours: (sleepHistory[today]?.hours || 0) + sleepData.hours,
       };
 
       await AsyncStorage.setItem("sleepData", JSON.stringify(sleepHistory));
@@ -37,7 +39,7 @@ const SleepInput = ({ onAddSleep }) => {
 
       Alert.alert(
         "Sleep Duration",
-        `You will spend approximately ${sleepHours.toFixed(2)} hours sleeping.`,
+        `You will spend approximately ${sleepHours} hours and ${sleepMinutes} minutes sleeping.`,
         [{ text: "OK" }]
       );
 
@@ -144,12 +146,12 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 5,
     alignItems: "center",
-    width: '60%', // Reduced button width
+    width: '60%',
     alignSelf: 'center',
   },
   buttonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
