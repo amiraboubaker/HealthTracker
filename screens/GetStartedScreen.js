@@ -9,7 +9,6 @@ const GetStartedScreen = ({ navigation }) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        {/* White container for the logo */}
         <View style={styles.logoContainer}>
           <Image source={require('../assets/logo.png')} style={styles.logo} />
         </View>
@@ -28,7 +27,6 @@ const GetStartedScreen = ({ navigation }) => {
   );
 };
 
-// Hide the header for this screen
 GetStartedScreen.navigationOptions = {
   headerShown: false,
 };
@@ -43,16 +41,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 80,
   },
-  // White container for the logo
+ 
   logoContainer: {
     width: 170,
     height: 170,
     backgroundColor: '#fff',
-    borderRadius: 85, // Circular container
+    borderRadius: 85,
+    borderColor: '#ff6347',
+    borderWidth: 5, 
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    elevation: 5, // Slight shadow for depth
+    elevation: 5,
   },
   logo: {
     width: 150,

@@ -16,7 +16,7 @@ const HomeScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image source={require('../assets/user.jpg')} style={styles.icon} />
+        <Image source={require('../assets/user.png')} style={styles.icon} />
         <Text style={styles.username}>{user.firstName} {user.lastName}</Text>
       </View>
       <View style={styles.cardsContainer}>
