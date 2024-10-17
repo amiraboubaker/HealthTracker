@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import SleepInput from "../components/sleep/sleepInput"; // Correct import path
-import WeeklySleepChart from "../components/sleep/WeeklySleepChart"; // Correct import path
+import WeeklySleepChart from "../components/sleep/weeklySleepChart"; // Correct import path
 
 export default function SleepScreen() {
     const [sleepData, setSleepData] = useState({});
