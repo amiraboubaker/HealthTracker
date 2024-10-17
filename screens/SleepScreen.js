@@ -48,3 +48,4 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
 });
+console.log("SleepScreen Loaded");

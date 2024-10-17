@@ -1,31 +1,53 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Alert, Dimensions, StyleSheet, Text, View } from 'react-native'; // Import TextInput here
 import { BarChart } from 'react-native-chart-kit';
 
 export default function WeeklySleepChart() {
-  const [sleepDuration, setSleepDuration] = useState(0); // This is the duration to be stored
+  const [sleepTime, setSleepTime] = useState(''); // Store sleep time as a string
+  const [wakeUpTime, setWakeUpTime] = useState(''); // Store wake-up time as a string
+  const [sleepDuration, setSleepDuration] = useState(0); // Duration in minutes
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [{ data: [] }],
   });
   const [maxValue, setMaxValue] = useState(0);
 
-  // Load sleep duration from AsyncStorage when the component mounts
+  // Load previous sleep data from AsyncStorage
   useEffect(() => {
-    const loadSleepDuration = async () => {
+    const loadSleepData = async () => {
       try {
-        const value = await AsyncStorage.getItem('sleepDuration');
-        if (value !== null) {
-          setSleepDuration(parseInt(value)); // Set stored sleep duration
+        const sleepTimeValue = await AsyncStorage.getItem('sleepTime');
+        const wakeUpTimeValue = await AsyncStorage.getItem('wakeUpTime');
+
+        if (sleepTimeValue && wakeUpTimeValue) {
+          setSleepTime(sleepTimeValue);
+          setWakeUpTime(wakeUpTimeValue);
+          calculateSleepDuration(sleepTimeValue, wakeUpTimeValue);
         }
       } catch (error) {
-        console.error('Failed to load sleep duration:', error);
+        console.error('Failed to load sleep data:', error);
       }
     };
-    loadSleepDuration();
+    loadSleepData();
   }, []);
+
+  // Calculate sleep duration whenever sleep or wake-up time changes
+  useEffect(() => {
+    calculateSleepDuration(sleepTime, wakeUpTime);
+  }, [sleepTime, wakeUpTime]);
+
+  // Function to calculate sleep duration
+  const calculateSleepDuration = (sleepTime, wakeUpTime) => {
+    if (sleepTime && wakeUpTime) {
+      const sleepMoment = moment(sleepTime, 'HH:mm');
+      const wakeUpMoment = moment(wakeUpTime, 'HH:mm');
+      const duration = moment.duration(wakeUpMoment.diff(sleepMoment)).asMinutes();
+      
+      setSleepDuration(duration > 0 ? duration : 0); // Ensure duration is non-negative
+    }
+  };
 
   // Update chart data when sleepDuration changes
   useEffect(() => {
@@ -61,17 +83,14 @@ export default function WeeklySleepChart() {
     return days;
   };
 
-  // Save sleep duration and update chart immediately
-  const handleSaveSleepDuration = async () => {
+  // Save sleep data to AsyncStorage
+  const handleSaveSleepData = async () => {
     try {
-      await AsyncStorage.setItem('sleepDuration', sleepDuration.toString()); // Save to AsyncStorage
-      Alert.alert('Success', 'Sleep duration saved!');
-      
-      // Trigger a re-render of the chart by updating the sleep duration
-      const updatedDuration = parseInt(sleepDuration); // Make sure it's a number
-      setSleepDuration(updatedDuration);  // Updates the chart automatically
+      await AsyncStorage.setItem('sleepTime', sleepTime);
+      await AsyncStorage.setItem('wakeUpTime', wakeUpTime);
+      Alert.alert('Success', 'Sleep data saved!');
     } catch (error) {
-      console.error('Failed to save sleep duration:', error);
+      console.error('Failed to save sleep data:', error);
     }
   };
 
@@ -82,8 +101,8 @@ export default function WeeklySleepChart() {
         data={chartData}
         width={Dimensions.get("window").width - 30}
         height={220}
-        yAxisSuffix=" hrs"
-        yAxisInterval={1}
+        yAxisSuffix=" mins"
+        yAxisInterval={60} // Change to 60 to represent hours more clearly
         chartConfig={{
           backgroundColor: "#1cc910",
           backgroundGradientFrom: "#eff3ff",
@@ -102,7 +121,6 @@ export default function WeeklySleepChart() {
         yLabelsOffset={0}
         yAxisMax={maxValue}
       />
-      <Button title="Save Sleep Duration" onPress={handleSaveSleepDuration} />
     </View>
   );
 }
@@ -115,4 +133,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: "center",
   },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    padding: 10,
+    margin: 10,
+  },
 });
+
+console.log("WeeklySleepChart Loaded");
