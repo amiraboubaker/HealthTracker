@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { auth, db } from '../config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { setDoc, doc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
+import React, { useState } from 'react';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { auth, db } from '../config/firebaseConfig';
 
-  const SignUpScreen = ({ navigation }) => {
+const SignUpScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -13,32 +13,55 @@ import { setDoc, doc } from 'firebase/firestore';
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSignUp = async () => {
+    // Basic validation checks
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'All fields are required.');
+      return;
+    }
+  
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+  
+    // Password length and match validation
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password should be at least 6 characters long.');
       return;
     }
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match.');
       return;
     }
-
+  
     try {
+      // Creating user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
+  
+      // Storing user data in Firestore
       await setDoc(doc(db, 'users', user.uid), {
         firstName,
         lastName,
         email,
       });
-
-      Alert.alert('Success', 'Account created successfully!');
-      navigation.navigate('SignIn');
+  
+      console.log("User signed up successfully:", user); // Log user info
+      
+      // Navigate to Home after successful signup
+      navigation.navigate('Home'); 
     } catch (error) {
-      Alert.alert('Error', error.message);
+      console.error("Error signing up:", error); // Log error details
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert('Error', 'This email address is already in use. Please try signing in instead.');
+      } else {
+        Alert.alert('Error', error.message);
+      }
     }
   };
-
+  
   return (
     <LinearGradient
       colors={['#4c669f', '#3b5998', '#192f6a']}
