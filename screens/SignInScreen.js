@@ -1,22 +1,21 @@
-import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 import { LinearGradient } from 'expo-linear-gradient';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../config/firebaseConfig'; // Import Firebase auth configuration
+import React, { useState } from 'react';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { auth } from '../config/firebaseConfig';
 
-const SignInScreen = ({ navigation }) => {
+const SignInScreen = () => {
+  const navigation = useNavigation(); // Get the navigation object
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignIn = async () => {
     try {
-      // Attempt to sign in the user with Firebase Auth
       await signInWithEmailAndPassword(auth, email, password);
-      
-      // Navigate to Home on successful sign-in
-      navigation.navigate('Home');
+      navigation.navigate('Home'); // Use the navigation object to navigate
     } catch (error) {
-      // Display an error message in case of invalid credentials or other errors
       Alert.alert('Error', 'Invalid credentials or an issue occurred.');
     }
   };
