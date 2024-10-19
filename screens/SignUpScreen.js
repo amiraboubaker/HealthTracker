@@ -1,9 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { auth, db } from '../config/firebaseConfig';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore';
 
-const SignUpScreen = ({ navigation }) => {
+  const SignUpScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,16 +22,21 @@ const SignUpScreen = ({ navigation }) => {
       return;
     }
 
-    const userData = {
-      firstName,
-      lastName,
-      email,
-      password,
-    };
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-    await AsyncStorage.setItem('user', JSON.stringify(userData));
-    Alert.alert('Success', 'Account created successfully!');
-    navigation.navigate('SignIn');
+      await setDoc(doc(db, 'users', user.uid), {
+        firstName,
+        lastName,
+        email,
+      });
+
+      Alert.alert('Success', 'Account created successfully!');
+      navigation.navigate('SignIn');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   return (
@@ -107,8 +114,8 @@ const styles = StyleSheet.create({
     height: 170,
     backgroundColor: '#fff',
     borderRadius: 85,
-    borderColor: '#ff6347', // Orange border color
-    borderWidth: 5, // Border width
+    borderColor: '#ff6347',
+    borderWidth: 5,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -138,7 +145,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signInPrompt: {
-    color: '#fff', 
+    color: '#fff',
   },
   link: {
     color: '#ff6347',
@@ -152,7 +159,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   buttonText: {
-    color: '#fff', 
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },

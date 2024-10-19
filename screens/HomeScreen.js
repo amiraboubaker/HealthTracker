@@ -7,8 +7,10 @@ const HomeScreen = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const storedUser = await AsyncStorage.getItem('user');
-      setUser(JSON.parse(storedUser));
+      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+      if (userDoc.exists()) {
+        setUser(userDoc.data());
+      }
     };
     fetchUser();
   }, []);

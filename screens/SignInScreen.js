@@ -1,18 +1,23 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../config/firebaseConfig'; // Import Firebase auth configuration
 
 const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignIn = async () => {
-    const user = JSON.parse(await AsyncStorage.getItem('user'));
-    if (user && user.email === email && user.password === password) {
+    try {
+      // Attempt to sign in the user with Firebase Auth
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      // Navigate to Home on successful sign-in
       navigation.navigate('Home');
-    } else {
-      alert('Invalid credentials');
+    } catch (error) {
+      // Display an error message in case of invalid credentials or other errors
+      Alert.alert('Error', 'Invalid credentials or an issue occurred.');
     }
   };
 
