@@ -34,15 +34,15 @@ const FitnessCoachChatbot = () => {
         { type: 'bot', text: chatbotResponse(userMessage) },
       ];
       setChatHistory(newChat);
-      setUserMessage(''); // Clear input after sending message
+      setUserMessage('');
     } else {
-      alert("Please enter a message."); // Alert for empty messages
+      alert("Please enter a message.");
     }
   };
 
   const renderMessage = ({ item }) => (
     <View style={item.type === 'user' ? styles.userMessage : styles.botMessage}>
-      <Text style={styles.messageText}>{item.text}</Text> {/* Make sure this line is correct */}
+      <Text style={styles.messageText}>{item.text}</Text>
     </View>
   );
 
@@ -67,7 +67,7 @@ const FitnessCoachChatbot = () => {
   );
 };
 
-// Styles
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
