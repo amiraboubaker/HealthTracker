@@ -6,6 +6,7 @@ import HomeScreen from "./screens/HomeScreen";
 import SignInScreen from "./screens/SignInScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import WaterScreen from "./screens/WaterScreen";
+import SleepScreen from "./screens/SleepScreen";
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,11 @@ const App = () => {
         <Stack.Screen
           name="SignIn"
           component={SignInScreen}
+          options={{ headerTitle: "" }}
+        />
+        <Stack.Screen
+          name="Sleep"
+          component={SleepScreen}
           options={{ headerTitle: "" }}
         />
         <Stack.Screen

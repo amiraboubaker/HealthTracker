@@ -17,7 +17,7 @@ const SignInScreen = ({ navigation }) => {
   const handleSignIn = async () => {
     const user = JSON.parse(await AsyncStorage.getItem("user"));
     if (user && user.email === email && user.password === password) {
-      navigation.navigate("Water");
+      navigation.navigate("Sleep");
     } else {
       alert("Invalid credentials");
     }

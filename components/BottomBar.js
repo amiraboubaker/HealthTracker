@@ -29,7 +29,7 @@ const BottomBar = () => {
 
             return <Icon name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: "#4CAF50",
+          tabBarActiveTintColor: "#00bfff",
           tabBarInactiveTintColor: "gray",
         })}
       >
