@@ -5,8 +5,8 @@ import GetStartedScreen from "./screens/GetStartedScreen";
 import HomeScreen from "./screens/HomeScreen";
 import SignInScreen from "./screens/SignInScreen";
 import SignUpScreen from "./screens/SignUpScreen";
-import WaterScreen from "./screens/WaterScreen";
 import SleepScreen from "./screens/SleepScreen";
+import WaterScreen from "./screens/WaterScreen";
 
 const Stack = createStackNavigator();
 
@@ -25,22 +25,22 @@ const App = () => {
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
-          options={{ headerTitle: "" }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="SignIn"
           component={SignInScreen}
-          options={{ headerTitle: "" }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Sleep"
           component={SleepScreen}
-          options={{ headerTitle: "" }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ headerTitle: "Welcome" }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Water"
