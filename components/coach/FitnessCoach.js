@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native'; 
+import { useState } from 'react';
 
-const CoachScreen = () => {
+const FitnessCoachChatbot = () => {
   const [userMessage, setUserMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([
     { type: 'bot', text: "Hi, I'm your personal coach, what can I do for you?" },
@@ -48,9 +48,6 @@ const CoachScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Coach Bot</Text>
-      </View>
       <FlatList
         data={chatHistory}
         renderItem={renderMessage}
@@ -69,6 +66,7 @@ const CoachScreen = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -113,26 +111,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: 10,
     marginVertical: 5,
-    padding: 15,
+    padding: 10,
     maxWidth: '80%',
   },
   messageText: {
     color: '#000',
   },
-  container: {
-    flex: 1 ,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 25,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  header: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
 });
 
-export default CoachScreen;
+export default FitnessCoachChatbot;

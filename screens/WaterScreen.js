@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import WaterCircle from "../components/water/WaterCircle";
 import WaterInput from "../components/water/WaterInput";
@@ -8,6 +9,7 @@ import WeeklyWaterChart from "../components/water/WeeklyWaterChart";
 const WATER_STORAGE_KEY = "daily_water_data";
 
 export default function WaterScreen({ route }) {
+  const navigation = useNavigation();
   const { userWaterGoal } = route.params;
   const [dailyWaterData, setDailyWaterData] = useState({});
   const [currentWater, setCurrentWater] = useState(0);
@@ -54,6 +56,9 @@ export default function WaterScreen({ route }) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Water Tracker</Text>
+      </View>
       <WaterCircle
         currentWater={currentWater}
         totalWater={userWaterGoal}
@@ -79,6 +84,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f0f8ff",
+  },
+  header: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 25,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   waterStatus: {
     fontSize: 16,

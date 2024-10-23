@@ -1,14 +1,12 @@
+// App.js
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import GetStartedScreen from "./screens/GetStartedScreen";
-import HomeScreen from "./screens/HomeScreen";
 import SignInScreen from "./screens/SignInScreen";
 import SignUpScreen from "./screens/SignUpScreen";
-import WaterScreen from "./screens/WaterScreen";
-import SleepScreen from "./screens/SleepScreen";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { parse } from "react-native-svg";
+import MainNavigator from "./components/MainNavigator"; // We'll create this
 
 const Stack = createStackNavigator();
 
@@ -23,12 +21,12 @@ const App = () => {
           const parsedData = JSON.parse(storedData);
           console.log("Parsed Data: ", parsedData);
           if (parsedData === "True") {
-            setRoute("Sleep");
+            setRoute("Main"); // Navigate to Main if logged in
           } else {
-            setRoute("GetStarted");
+            setRoute("SignIn");
           }
         } else {
-          setRoute("GetStarted");
+          setRoute("SignIn");
         }
       } catch (error) {
         console.error("Error retrieving data from AsyncStorage: ", error);
@@ -38,47 +36,30 @@ const App = () => {
     fetchData();
   }, []);
 
-  // Render nothing until the route is determined
   if (route === null) {
-    return null; // Or you can return a loading indicator if you prefer
+    return null;
   }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={route}>
-        {/* GetStartedScreen: header hidden */}
-        <Stack.Screen
-          name="GetStarted"
-          component={GetStartedScreen}
-          options={{ headerShown: false }} // Hides the header
-        />
-
-        {/* Other screens with customized header */}
+      <Stack.Navigator
+        initialRouteName={route}
+        screenOptions={{ headerShown: false }}
+      >
+        {/* Auth Stack */}
+        <Stack.Screen name="GetStarted" component={GetStartedScreen} />
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
-          options={{ headerTitle: "" }}
+          options={{ headerShown: true, headerTitle: "" }}
         />
         <Stack.Screen
           name="SignIn"
           component={SignInScreen}
-          options={{ headerTitle: "" }}
+          options={{ headerShown: true, headerTitle: "" }}
         />
-        <Stack.Screen
-          name="Sleep"
-          component={SleepScreen}
-          options={{ headerTitle: "" }}
-        />
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ headerTitle: "Welcome" }}
-        />
-        <Stack.Screen
-          name="Water"
-          component={WaterScreen}
-          initialParams={{ userWaterGoal: 2000 }} // Pass parameters here
-        />
+        {/* Main App Stack */}
+        <Stack.Screen name="Main" component={MainNavigator} />
       </Stack.Navigator>
     </NavigationContainer>
   );

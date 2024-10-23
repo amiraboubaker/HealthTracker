@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
@@ -9,7 +8,7 @@ export default function WeeklySleepChart({ sleepData }) {
     labels: [],
     datasets: [{ data: [] }],
   });
-  const [maxValue, setMaxValue] = useState(0);
+  const [maxValue, setMaxValue] = useState(10); // Set a maximum value for scaling
 
   // Load previous sleep data from AsyncStorage
   useEffect(() => {
@@ -21,17 +20,51 @@ export default function WeeklySleepChart({ sleepData }) {
   const updateChartData = (sleepHistory) => {
     const last7Days = getLast7Days();
     const chartData = last7Days.map((date) => {
-      const sleepDuration = sleepHistory[date]?.hours || 0;
-      return sleepDuration; // Return total hours
+      const sleepEntry = sleepHistory[date] || {};
+
+      // Initialize sleep duration for the day
+      let sleepDuration = 0;
+
+      // If the date is today, calculate sleep duration if data exists
+      if (moment().isSame(date, 'day')) {
+        if (sleepEntry.sleepTime && sleepEntry.wakeUpTime) {
+          const sleepTime = moment(sleepEntry.sleepTime);
+          const wakeUpTime = moment(sleepEntry.wakeUpTime);
+          sleepDuration = Math.abs(wakeUpTime.diff(sleepTime, 'minutes')); // Ensure positive duration
+        }
+        return sleepDuration / 60; // Convert minutes to hours for chart
+      }
+
+      // If sleep data exists for past days, calculate sleep duration
+      if (sleepEntry.sleepTime && sleepEntry.wakeUpTime) {
+        const sleepTime = moment(sleepEntry.sleepTime);
+        const wakeUpTime = moment(sleepEntry.wakeUpTime);
+        sleepDuration = Math.abs(wakeUpTime.diff(sleepTime, 'minutes')); // Ensure positive duration
+        return sleepDuration / 60; // Convert minutes to hours for chart
+      } else {
+        // Generate random values for past days if there's no data
+        const randomSleepHours = Math.floor(Math.random() * 9); // Random hours between 0 and 8
+        const randomSleepMinutes = Math.floor(Math.random() * 60); // Random minutes between 0 and 59
+        const sleepTime = moment().subtract(7 - last7Days.indexOf(date), 'days').set({ hour: randomSleepHours, minute: randomSleepMinutes });
+        const wakeUpTime = sleepTime.clone().add(randomSleepHours, 'hours').add(randomSleepMinutes, 'minutes');
+
+        sleepEntry.sleepTime = sleepTime.toISOString();
+        sleepEntry.wakeUpTime = wakeUpTime.toISOString();
+
+        // Calculate sleep duration for the generated data
+        sleepDuration = Math.abs(moment(wakeUpTime).diff(sleepTime, 'minutes')); // Ensure positive duration
+
+        return sleepDuration / 60; // Convert minutes to hours for chart
+      }
     });
 
     const max = Math.max(...chartData, 0); // Minimum scale value
+    setMaxValue(Math.max(max, 8)); // Ensure maxValue is at least 8
 
     setChartData({
       labels: last7Days.map(date => moment(date, 'YYYY-MM-DD').format('DD/MM')), // Format as day/month
       datasets: [{ data: chartData }],
     });
-    setMaxValue(max);
   };
 
   const getLast7Days = () => {
@@ -45,7 +78,7 @@ export default function WeeklySleepChart({ sleepData }) {
   const formatYAxisLabel = (value) => {
     const hours = Math.floor(value);
     const minutes = Math.round((value % 1) * 60);
-    return `${hours} hr ${minutes} mn`; // Format as "X hr X mn"
+    return `${hours}h ${minutes < 10 ? '0' + minutes : minutes}m`; // Format as "h m"
   };
 
   return (
@@ -62,7 +95,7 @@ export default function WeeklySleepChart({ sleepData }) {
           backgroundColor: "#1cc910",
           backgroundGradientFrom: "#eff3ff",
           backgroundGradientTo: "#efefef",
-          decimalPlaces: 0, // No decimal places for minutes
+          decimalPlaces: 2, // Allow for decimal places to represent fractions of an hour
           color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
           labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           style: {
@@ -71,6 +104,7 @@ export default function WeeklySleepChart({ sleepData }) {
           propsForLabels: {
             fontSize: 10,
           },
+          formatYLabel: (value) => formatYAxisLabel(value), // Use formatYAxisLabel here
         }}
         verticalLabelRotation={30}
         fromZero={true}
@@ -78,6 +112,7 @@ export default function WeeklySleepChart({ sleepData }) {
         segments={5}
         yLabelsOffset={0}
         yAxisMax={maxValue}
+        yAxisInterval={1} // Ensure there are segments for each hour
         onDataPointClick={(data) => {
           const { value } = data;
           const hours = Math.floor(value);
