@@ -13,6 +13,7 @@ export default function SleepScreen() {
 
   const playWakeUpSound = async () => {
     try {
+      console.log("Attempting to play sound"); // Debug log
       const { sound } = await Audio.Sound.createAsync(
         require('../assets/sounds/WakeUp.mp3')
       );
@@ -20,7 +21,7 @@ export default function SleepScreen() {
       setIsSoundPlaying(true);
       await sound.playAsync();
 
-      // Alert the user with an option to stop the sound
+      // Show alert after the sound starts playing
       Alert.alert(
         "Wake up!",
         "It's time to wake up.",
@@ -29,13 +30,15 @@ export default function SleepScreen() {
             text: "Stop Sound",
             onPress: async () => {
               await stopSound();
-            }
-          }
+            },
+          },
         ],
         { cancelable: false }
       );
+
     } catch (error) {
       console.error("Error playing sound:", error);
+      Alert.alert("Error", "Failed to play the sound.");
     }
   };
 
@@ -44,25 +47,38 @@ export default function SleepScreen() {
       await sound.stopAsync();
       await sound.unloadAsync(); // Unload the sound from memory
       setSound(null);
-      setIsSoundPlaying(false);
+      setIsSoundPlaying(false); // Update sound playing state
+      Alert.alert("Sound Stopped", "The wake-up sound has been stopped.");
     }
   };
 
   useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync(); // Unload sound when the component unmounts or sound changes
-        }
-      : undefined;
+    return () => {
+      if (sound) {
+        sound.unloadAsync(); // Unload sound when the component unmounts or sound changes
+      }
+    };
   }, [sound]);
 
   const addSleep = async (newSleepData) => {
-    setSleepData(newSleepData);
-    await AsyncStorage.setItem("sleepData", JSON.stringify(newSleepData));
-    
+    // Get the current date and time
+    const currentDateTime = new Date();
+
+    // Set the sleep time to the current date and time
+    const sleepWithCurrentTime = {
+      ...newSleepData,
+      [Object.keys(newSleepData)[0]]: {
+        ...newSleepData[Object.keys(newSleepData)[0]],
+        sleepTime: currentDateTime.toISOString(), // Store as ISO string
+      },
+    };
+
+    setSleepData(sleepWithCurrentTime);
+    await AsyncStorage.setItem("sleepData", JSON.stringify(sleepWithCurrentTime));
+
     // Update wakeUpTime with the new data
-    if (newSleepData[Object.keys(newSleepData)[0]].wakeUpTime) {
-      const newWakeUpTime = new Date(newSleepData[Object.keys(newSleepData)[0]].wakeUpTime);
+    if (sleepWithCurrentTime[Object.keys(sleepWithCurrentTime)[0]].wakeUpTime) {
+      const newWakeUpTime = new Date(sleepWithCurrentTime[Object.keys(sleepWithCurrentTime)[0]].wakeUpTime);
       setWakeUpTime(newWakeUpTime);
       console.log("New Wake Up Time Set:", newWakeUpTime); // Debugging log
     }
@@ -90,10 +106,14 @@ export default function SleepScreen() {
   }, []);
 
   useEffect(() => {
-    // Only set a timeout if wakeUpTime is set and in the future
+    // Check if wakeUpTime is set and in the future
     if (wakeUpTime && !isSoundPlaying) {
       const currentTime = new Date();
       const timeDiff = wakeUpTime.getTime() - currentTime.getTime();
+
+      console.log("Current Time:", currentTime); // Debugging log
+      console.log("Wake Up Time:", wakeUpTime); // Debugging log
+      console.log("Time Difference (ms):", timeDiff); // Debugging log
 
       if (timeDiff > 0) {
         const timeoutId = setTimeout(() => {

@@ -1,14 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react"; // Added useEffect
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const SleepInput = ({ onAddSleep }) => {
+  // Set the initial sleep time to the current time
   const [sleepTime, setSleepTime] = useState(new Date());
   const [wakeUpTime, setWakeUpTime] = useState(new Date());
   const [showSleepPicker, setShowSleepPicker] = useState(false);
   const [showWakePicker, setShowWakePicker] = useState(false);
+
+  // useEffect to set the sleep time to the current time on component mount
+  useEffect(() => {
+    const currentTime = new Date();
+    setSleepTime(currentTime);
+    setWakeUpTime(new Date(currentTime.getTime() + 8 * 60 * 60 * 1000)); // Set default wake-up time to 8 hours later
+  }, []); // Empty dependency array ensures this runs only on mount
 
   const handleWakeUpTimeChange = (selectedDate) => {
     setWakeUpTime(selectedDate);
@@ -43,7 +51,7 @@ const SleepInput = ({ onAddSleep }) => {
         onAddSleep(newSleepData); // Trigger the state update
         Alert.alert(
           "Sleep Duration",
-          `You will spend approximately ${sleepHours} hours and ${sleepMinutes} minutes sleeping.`,
+          `You will spend approximately ${Math.abs(sleepHours)} hours and ${Math.abs(sleepMinutes)} minutes sleeping.`,
           [{ text: "OK" }]
         );
       })
@@ -98,6 +106,7 @@ const SleepInput = ({ onAddSleep }) => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
