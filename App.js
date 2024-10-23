@@ -16,6 +16,7 @@ const App = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        AsyncStorage.setItem("loggedIn", JSON.stringify("False"));
         const storedData = await AsyncStorage.getItem("loggedIn");
         if (storedData) {
           const parsedData = JSON.parse(storedData);

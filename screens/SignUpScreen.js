@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Ensure AsyncStorage is imported correctly
 import { auth, db } from "../config/firebaseConfig";
 
 const SignUpScreen = ({ navigation }) => {
@@ -115,7 +116,6 @@ const SignUpScreen = ({ navigation }) => {
     }
   };
 
-  // Rest of your component remains the same...
   return (
     <LinearGradient
       colors={["#4c669f", "#3b5998", "#192f6a"]}
@@ -254,6 +254,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
 });
 
