@@ -1,7 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { auth, db } from '../config/firebaseConfig';
 
 const SignUpScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
@@ -11,27 +13,55 @@ const SignUpScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSignUp = async () => {
+    // Basic validation checks
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'All fields are required.');
+      return;
+    }
+  
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+  
+    // Password length and match validation
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password should be at least 6 characters long.');
       return;
     }
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match.');
       return;
     }
-
-    const userData = {
-      firstName,
-      lastName,
-      email,
-      password,
-    };
-
-    await AsyncStorage.setItem('user', JSON.stringify(userData));
-    Alert.alert('Success', 'Account created successfully!');
-    navigation.navigate('SignIn');
+  
+    try {
+      // Creating user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      // Storing user data in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        firstName,
+        lastName,
+        email,
+      });
+  
+      console.log("User signed up successfully:", user); // Log user info
+      
+      // Navigate to Home after successful signup
+      navigation.navigate('Home'); 
+    } catch (error) {
+      console.error("Error signing up:", error); // Log error details
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert('Error', 'This email address is already in use. Please try signing in instead.');
+      } else {
+        Alert.alert('Error', error.message);
+      }
+    }
   };
-
+  
   return (
     <LinearGradient
       colors={['#4c669f', '#3b5998', '#192f6a']}
@@ -107,8 +137,8 @@ const styles = StyleSheet.create({
     height: 170,
     backgroundColor: '#fff',
     borderRadius: 85,
-    borderColor: '#ff6347', // Orange border color
-    borderWidth: 5, // Border width
+    borderColor: '#ff6347',
+    borderWidth: 5,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -138,7 +168,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signInPrompt: {
-    color: '#fff', 
+    color: '#fff',
   },
   link: {
     color: '#ff6347',
@@ -152,7 +182,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   buttonText: {
-    color: '#fff', 
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },

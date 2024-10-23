@@ -23,7 +23,7 @@ const App = () => {
           const parsedData = JSON.parse(storedData);
           console.log("Parsed Data: ", parsedData);
           if (parsedData === "True") {
-            setRoute("Home");
+            setRoute("Sleep");
           } else {
             setRoute("GetStarted");
           }

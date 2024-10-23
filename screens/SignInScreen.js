@@ -1,6 +1,11 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
+import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import { LinearGradient } from "expo-linear-gradient";
+import { signInWithEmailAndPassword } from "firebase/auth";
+
+import { auth } from "../config/firebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import {
   Image,
   StyleSheet,
@@ -10,61 +15,63 @@ import {
   View,
 } from "react-native";
 
-const SignInScreen = ({ navigation }) => {
+const SignInScreen = () => {
+  const navigation = useNavigation(); // Get the navigation object
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSignIn = async () => {
-    const user = JSON.parse(await AsyncStorage.getItem("user"));
-    if (user && user.email === email && user.password === password) {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
       AsyncStorage.setItem("loggedIn", JSON.stringify("True"));
-      navigation.navigate("Sleep");
-    } else {
-      alert("Invalid credentials");
+      navigation.navigate("Sleep"); // Use the navigation object to navigate
+    } catch (error) {
+      Alert.alert("Error", "Invalid credentials or an issue occurred.");
     }
-  };
 
-  return (
-    <LinearGradient
-      colors={["#4c669f", "#3b5998", "#192f6a"]}
-      style={styles.background}
-    >
-      <View style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Image source={require("../assets/logo.png")} style={styles.logo} />
-        </View>
-        <Text style={styles.title}>Sign In</Text>
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-          keyboardType="email-address"
-        />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-          secureTextEntry
-        />
+    return (
+      <LinearGradient
+        colors={["#4c669f", "#3b5998", "#192f6a"]}
+        style={styles.background}
+      >
+        <View style={styles.container}>
+          <View style={styles.logoContainer}>
+            <Image source={require("../assets/logo.png")} style={styles.logo} />
+          </View>
+          <Text style={styles.title}>Sign In</Text>
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+            keyboardType="email-address"
+          />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+            secureTextEntry
+          />
 
-        <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-          <Text style={styles.buttonText}>Sign In</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+            <Text style={styles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
 
-        <Text style={styles.signInPrompt}>
-          Don't have an account?{" "}
-          <Text
-            onPress={() => navigation.navigate("SignUp")}
-            style={styles.link}
-          >
-            Sign Up
+          <Text style={styles.signInPrompt}>
+            Don't have an account?{" "}
+            <Text
+              onPress={() => navigation.navigate("SignUp")}
+              style={styles.link}
+            >
+              Sign Up
+            </Text>
           </Text>
-        </Text>
-      </View>
-    </LinearGradient>
-  );
+        </View>
+      </LinearGradient>
+    );
+  };
 };
 
 const styles = StyleSheet.create({
