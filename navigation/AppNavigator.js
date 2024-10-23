@@ -1,6 +1,7 @@
+// AppNavigator.js
 import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import WaterScreen from "../screens/WaterScreen";
 import FoodScreen from "../screens/FoodScreen";
@@ -9,7 +10,7 @@ import CoachScreen from "../screens/CoachScreen";
 
 const Tab = createBottomTabNavigator();
 
-const BottomBar = () => {
+const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -36,9 +37,8 @@ const BottomBar = () => {
         <Tab.Screen
           name="Water"
           component={WaterScreen}
-          initialParams={{ userWaterGoal: 2000 }} // Ici tu définis les paramètres
+          initialParams={{ userWaterGoal: 2000 }} // Example parameter
         />
-
         <Tab.Screen name="Food" component={FoodScreen} />
         <Tab.Screen name="Sleep" component={SleepScreen} />
         <Tab.Screen name="Coach" component={CoachScreen} />
@@ -47,4 +47,4 @@ const BottomBar = () => {
   );
 };
 
-export default BottomBar;
+export default AppNavigator;
