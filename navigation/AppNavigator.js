@@ -1,12 +1,13 @@
 // AppNavigator.js
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
+import React from "react";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import WaterScreen from "../screens/WaterScreen";
-import FoodScreen from "../screens/FoodScreen";
-import SleepScreen from "../screens/SleepScreen";
 import CoachScreen from "../screens/CoachScreen";
+import FoodScreen from "../screens/FoodScreen";
+import GetStartedScreen from "../screens/GetStartedScreen";
+import SleepScreen from "../screens/SleepScreen";
+import WaterScreen from "../screens/WaterScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -15,6 +16,7 @@ const AppNavigator = () => {
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
+          headerShown: false,
           tabBarIcon: ({ color, size }) => {
             let iconName;
 

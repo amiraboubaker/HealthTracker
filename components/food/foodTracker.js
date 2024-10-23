@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { RNCamera } from 'react-native-camera';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import { RNCamera } from 'react-native-camera';
 
 const FoodTracker = () => {
   const [scannedData, setScannedData] = useState(null);
@@ -21,7 +21,7 @@ const FoodTracker = () => {
   const fetchFoodData = async (barcode) => {
     try {
       const apiKey = '949c97c36081a6b1558419808fd5ccf5';
-      const apiUrl = `https://api.nutritionix.com/v1_1/item?upc=${barcode}&appId=YOUR_APP_ID&appKey=${apiKey}`;
+      const apiUrl = `https://api.nutritionix.com/v1_1/item?upc=${barcode}&appId=56cc565f&appKey=${apiKey}`;
 
       const response = await axios.get(apiUrl);
       setFoodData(response.data);

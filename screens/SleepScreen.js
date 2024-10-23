@@ -2,8 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from 'expo-av';
 import React, { useEffect, useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
-import SleepInput from "../components/sleep/sleepInput";
-import WeeklySleepChart from "../components/sleep/weeklySleepChart";
+import SleepInput from "../components/sleep/SleepInput";
+import WeeklySleepChart from "../components/sleep/WeeklySleepChart";
 
 export default function SleepScreen() {
   const [sleepData, setSleepData] = useState({});

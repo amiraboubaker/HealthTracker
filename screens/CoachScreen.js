@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 
 const CoachScreen = () => {
   const [userMessage, setUserMessage] = useState('');
@@ -48,6 +48,9 @@ const CoachScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Coach Bot</Text>
+      </View>
       <FlatList
         data={chatHistory}
         renderItem={renderMessage}
@@ -110,11 +113,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: 10,
     marginVertical: 5,
-    padding: 10,
+    padding: 15,
     maxWidth: '80%',
   },
   messageText: {
     color: '#000',
+  },
+  container: {
+    flex: 1 ,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 25,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  header: {
+    marginTop: 20,
+    marginBottom: 20,
   },
 });
 
