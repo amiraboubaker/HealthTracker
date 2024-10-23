@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Audio } from 'expo-av';
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Alert } from "react-native";
-import { Audio } from 'expo-av'; 
+import { Alert, Image, StyleSheet, Text, View } from "react-native";
 import SleepInput from "../components/sleep/sleepInput";
 import WeeklySleepChart from "../components/sleep/weeklySleepChart";
 
@@ -129,6 +129,12 @@ export default function SleepScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sleep Tracker</Text>
+      {/* Add Image Component here */}
+      <Image 
+        source={require('../assets/images/clock.png')} // Path to your clock image
+        style={styles.clockImage} // Apply styles for the image
+        resizeMode="contain" // Ensures the image fits well
+      />
       <SleepInput onAddSleep={addSleep} />
       <WeeklySleepChart sleepData={sleepData} />
     </View>
@@ -143,8 +149,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f8ff",
   },
   title: {
-    fontSize: 24,
+    fontSize: 25,
     fontWeight: "bold",
     marginBottom: 20,
+  },
+  clockImage: {
+    width: 150,  // Adjust width as needed
+    height: 150, // Adjust height as needed
+    marginBottom: 5, // Space below the image
+    marginTop: -30
   },
 });
