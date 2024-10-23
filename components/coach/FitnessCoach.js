@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native'; 
+import { useState } from 'react';
 
-const CoachScreen = () => {
+const FitnessCoachChatbot = () => {
   const [userMessage, setUserMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([
     { type: 'bot', text: "Hi, I'm your personal coach, what can I do for you?" },
@@ -67,6 +67,7 @@ const CoachScreen = () => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -118,4 +119,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CoachScreen;
+export default FitnessCoachChatbot;

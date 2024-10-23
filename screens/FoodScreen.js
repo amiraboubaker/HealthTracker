@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Camera } from 'expo-camera';
-import FoodTracker from '../components/food/foodTracker';
+import FoodTracker from '../components/food/FoodTracker';
 
 const FoodScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -31,7 +33,7 @@ const FoodScreen = () => {
 
   return (
     <View style={styles.container}>
-      <FoodTracker />
+      <FoodTracker isLoading={isLoading} error={error} />
     </View>
   );
 };
