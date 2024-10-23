@@ -10,45 +10,46 @@ const SleepInput = ({ onAddSleep }) => {
   const [showSleepPicker, setShowSleepPicker] = useState(false);
   const [showWakePicker, setShowWakePicker] = useState(false);
 
-  const handleAddSleep = async () => {
-    const sleepDuration = wakeUpTime - sleepTime; // Duration in milliseconds
+  const handleWakeUpTimeChange = (selectedDate) => {
+    setWakeUpTime(selectedDate);
+    const sleepDuration = selectedDate - sleepTime; // Duration in milliseconds
     const sleepHours = Math.floor(sleepDuration / 1000 / 60 / 60);
     const sleepMinutes = Math.floor((sleepDuration / 1000 / 60) % 60);
     const today = moment().format("YYYY-MM-DD");
 
-    const sleepData = {
-      hours: sleepHours + sleepMinutes / 60, // Save total hours (including minutes as a fraction)
-      date: today,
+    // Construct the sleep data object
+    const newSleepData = {
+      [today]: {
+        hours: sleepHours,
+        wakeUpTime: selectedDate.toISOString(), // Store as ISO string for consistency
+      },
     };
 
     // Save to AsyncStorage
-    try {
-      const storedData = await AsyncStorage.getItem("sleepData");
-      let sleepHistory = storedData ? JSON.parse(storedData) : {};
+    AsyncStorage.getItem("sleepData")
+      .then((storedData) => {
+        let sleepHistory = storedData ? JSON.parse(storedData) : {};
 
-      // Update the sleep data for the current date
-      sleepHistory[today] = {
-        ...sleepHistory[today],
-        hours: (sleepHistory[today]?.hours || 0) + sleepData.hours,
-      };
+        // Update the sleep data for the current date
+        sleepHistory[today] = {
+          ...sleepHistory[today],
+          hours: (sleepHistory[today]?.hours || 0) + sleepHours,
+          wakeUpTime: newSleepData[today].wakeUpTime,
+        };
 
-      await AsyncStorage.setItem("sleepData", JSON.stringify(sleepHistory));
-
-      // Trigger the state update
-      onAddSleep(sleepHistory);
-
-      Alert.alert(
-        "Sleep Duration",
-        `You will spend approximately ${sleepHours} hours and ${sleepMinutes} minutes sleeping.`,
-        [{ text: "OK" }]
-      );
-
-      // Clear inputs after alert
-      setSleepTime(new Date());
-      setWakeUpTime(new Date());
-    } catch (error) {
-      console.error("Failed to save sleep data", error);
-    }
+        return AsyncStorage.setItem("sleepData", JSON.stringify(sleepHistory));
+      })
+      .then(() => {
+        onAddSleep(newSleepData); // Trigger the state update
+        Alert.alert(
+          "Sleep Duration",
+          `You will spend approximately ${sleepHours} hours and ${sleepMinutes} minutes sleeping.`,
+          [{ text: "OK" }]
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to save sleep data", error);
+      });
   };
 
   return (
@@ -88,20 +89,15 @@ const SleepInput = ({ onAddSleep }) => {
             onChange={(event, selectedDate) => {
               setShowWakePicker(false);
               if (selectedDate) {
-                setWakeUpTime(selectedDate);
+                handleWakeUpTimeChange(selectedDate);
               }
             }}
           />
         )}
       </View>
-
-      <TouchableOpacity style={styles.button} onPress={handleAddSleep}>
-        <Text style={styles.buttonText}>Add Sleep</Text>
-      </TouchableOpacity>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
@@ -140,19 +136,6 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 16,
-  },
-  button: {
-    backgroundColor: "#00bfff",
-    padding: 5,
-    borderRadius: 5,
-    alignItems: "center",
-    width: '60%',
-    alignSelf: 'center',
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
   },
 });
 

@@ -13,7 +13,7 @@ const Stack = createStackNavigator();
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="GetStarted">
+      <Stack.Navigator initialRouteName="Sleep">
         {/* GetStartedScreen: header hidden */}
         <Stack.Screen
           name="GetStarted"
